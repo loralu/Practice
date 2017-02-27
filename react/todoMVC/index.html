@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<title>todoMVC</title>
+<script type="text/javascript" src="./react/react.js"></script>
+<script type="text/javascript" src="./react/react-dom.js"></script>
+<script type="text/javascript" src="./babel-browser.js"></script>
+<link rel="stylesheet" type="text/css" href="css/app.css">
+<link rel="stylesheet" type="text/css" href="css/base.css">
+</head>
+ <body class="lean-bar">
+    <section id="AppRoot" class="todoapp"></section>
+</body>
+<script type="text/babel">
+	var todolist = {
+	    name: "todos",
+	    todos: [{
+	            completed: false,
+	            title: 'finish exercise'
+	        }, {
+	            completed: false,
+	            title: 'lean jsx'
+	        }, {
+	            completed: true,
+	            title: 'lean react'
+	        }]
+	};
+
+
+    /** 
+ 	* 计算未完成的条数
+ 	*/
+	var lefted=todolist.todos.reduce(function(preValue,value){
+		return value.completed ? preValue : preValue + 1
+	},0)	
+	
+	/** 
+ 	* TodoMVC组件
+ 	*/
+	var TodoMVC = React.createClass({
+		render: function(){
+			return <div>
+				 		<div className="header"> 
+				 			<h1>{todolist.name}</h1>
+							<input className="new-todo" placeholder="What needs to be done?" />
+						</div>
+						<div className="main">
+							<ul className="todo-list">
+								{todolist.todos.map(function(todo,index){ 									
+									if(todo.completed){
+										var isCompleted="completed";
+										var isChecked="checked";
+									}
+									return  <li className={isCompleted} key={index}>
+												<div className="view">
+													<input className="toggle" type="checkbox" checked={isChecked} />
+													<label>{todo.title}</label>	
+													<button className="destroy"></button>	
+												</div>
+																		
+											</li>					
+								})}					
+							</ul>
+						</div>
+						<div className="footer">
+							<span className="todo-count">{lefted} items left</span>
+							<ul className="filters">
+								<li><a href="#" className="selected">All</a></li>
+								<li><a href="#">Active</a></li>
+								<li><a href="#">Completed</a></li>
+							</ul>
+							<button className="clear-completed">Clear completed</button>
+						</div>
+				</div>	
+		}
+	});
+
+	ReactDOM.render(
+		<TodoMVC />,
+		document.getElementById("AppRoot")
+	);
+</script>
+    
+</html>
