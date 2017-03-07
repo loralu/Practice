@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<title>todoMVC</title>
+<script type="text/javascript" src="./react/react.js"></script>
+<script type="text/javascript" src="./react/react-dom.js"></script>
+<script type="text/javascript" src="./babel-browser.js"></script>
+<link rel="stylesheet" type="text/css" href="css/app.css">
+<link rel="stylesheet" type="text/css" href="css/base.css">
+</head>
+ <body class="lean-bar">
+    <section id="AppRoot" class="todoapp"></section>
+</body>
+<script type="text/babel">
+	var todolist = {
+	    name: "todos",
+	    todos: [{
+	            completed: false,
+	            title: 'finish exercise'
+	        }, {
+	            completed: false,
+	            title: 'lean jsx'
+	        }, {
+	            completed: true,
+	            title: 'lean react'
+	        }]
+	};
+
+
+	var APP = React.createClass({
+		getInitialState: function(){
+			return {
+				type : 'all',
+				todolist: todolist
+			}
+		},
+		
+		/** 
+	 	* 输入框输入
+	 	*/
+		changeHandel: function(e){
+			this.setState({
+				value:e.target.value
+			});			
+		},	
+
+		/** 
+	 	* 添加task
+	 	*/
+		addTaskHandel: function(){
+			var task=this.refs.tasks.refs.addTask;
+			var that=this;
+			if(task.value.length>0){
+				this.state.todolist.todos.push({
+					completed: false,
+					title: task.value
+				});
+				that.setState(todolist)	
+			}
+				
+		},
+
+		/** 
+	 	* 删除task
+	 	*/
+		delTaskHandel: function(i){
+			return function(){
+				this.setState(function(){
+					var todolist=this.state.todolist;
+					todolist.todos.splice(i,1);
+					return todolist;
+				})
+            }.bind(this);        
+		},
+	
+		/** 
+	 	* 更改显示
+	 	*/
+		switchTypeHandel: function(){
+			return function(value){
+				var type='';
+				switch(value){
+					case 'all':
+						type='all';
+						break;
+					case 'active':
+						type='active';
+						break;
+					case 'completed':
+						type='completed';
+						break;
+				}
+				this.setState({
+					type: type
+				})
+			}.bind(this);
+		},
+
+		/** 
+	 	* 更改每一个任务的状态
+	 	*/
+		switchTaskHandel:function(i){
+			return function(){
+				this.setState(function(){
+					var todolist=this.state.todolist;				
+					todolist.todos[i].completed = !todolist.todos[i].completed;
+					return todolist;
+				})
+			}.bind(this);
+		},
+
+		/** 
+	 	* 清除已完成的任务
+	 	*/
+		clrCompHandel: function(){
+			return function(){
+					var todolist=this.state.todolist;
+					console.log(todolist)
+		           	var todos=todolist.todos.filter(function(todo,i){
+							return !todo.completed;
+		           	});     		       		
+		         	todolist.todos=todos;		             
+		            this.setState(todolist);
+				}.bind(this);           
+		},
+
+		render: function(){
+			return  <div>
+						<div className="main">
+							<Header ref="tasks"
+									title={todolist.name} 
+									placeholder="What needs to be done?" 
+									onChange={this.changeHandel}
+									addTask={this.addTaskHandel}/>
+							<Todolist todos={todolist.todos} 
+									  type={this.state.type} 
+									  delTask={this.delTaskHandel} 
+									  switchTask={this.switchTaskHandel}/>
+							<Footer type={this.state.type} switchType={this.switchTypeHandel()} clear={this.clrCompHandel()}/>
+						</div>						
+					</div>
+		}
+	});
+
+	var Header = React.createClass({
+		render: function(){
+			return  <div>
+						<header className="header">
+							<h1>{this.props.title}</h1>
+							<div className="add-taskItem-box">
+								<input  ref="addTask"
+										className="new-todo"
+										placeholder={this.props.placeholder} 
+										onChange={this.props.onChange} 
+										/>
+								<button className="add-taskItem" onClick={this.props.addTask}>Add</button>
+							</div>
+						</header>					
+					</div>
+		}
+	});
+
+	var Todolist = React.createClass({
+		render: function(){	
+			let that=this;
+			return  <div>
+						<ul className="todo-list">
+							{
+								that.props.todos.map(function(todo,index){
+									switch(that.props.type){
+										case 'all':
+											return <TodoItem data={todo} 
+															key={index} 
+															delTask={that.props.delTask(index)} 
+															switchTask={that.props.switchTask(index)}/>
+											break;
+										case 'active':
+											if(!todo.completed){
+												return <TodoItem data={todo} 
+																key={index} 
+																delTask={that.props.delTask(index)} 
+																switchTask={that.props.switchTask(index)}/>
+											}											
+											break;
+										case 'completed' :
+											if(todo.completed){
+												return <TodoItem data={todo} 
+																key={index} 
+																delTask={that.props.delTask(index)} 
+																switchTask={that.props.switchTask(index)}/>
+											}											
+											break;
+										default:
+											break;
+									}
+								})
+							}							
+						</ul>
+					</div>
+		}
+	});
+
+	var TodoItem = React.createClass({
+		render:function(){
+			var isCompleted='';
+			var isChecked='';
+			if(this.props.data.completed){
+				isCompleted='completed';
+				isChecked='checked';
+			}
+			return 	<li className={isCompleted} >
+						<div className="view">
+							<input className="toggle" type="checkbox" checked={isChecked} onClick={this.props.switchTask}/>
+							<label>{this.props.data.title}</label>	
+							<button className="destroy" onClick={this.props.delTask}></button>	
+						</div>
+			  		</li>
+			}		
+	});
+
+	var Footer = React.createClass({
+		render:function(){
+			/** 
+			 * 计算未完成的条数
+			 */
+			var lefted=todolist.todos.reduce(function(preValue,value){
+				return value.completed ? preValue : preValue + 1
+			},0);
+
+			var selectedClass=['','',''];
+			switch(this.props.type){
+				case 'all':
+					selectedClass[0]='selected'
+					break;
+				case 'active':
+					selectedClass[1]='selected'
+					break;
+				case 'completed' :
+					selectedClass[2]='selected'
+					break;
+				default:
+					break;
+			}
+			return  <div className="footer">
+						<span className="todo-count">{lefted} items left</span>
+						<ul className="filters">
+							<li><a href="#" onClick={this.props.switchType.bind(null,'all')} className={selectedClass[0]}>All</a></li>
+							<li><a href="#" onClick={this.props.switchType.bind(null,'active')} className={selectedClass[1]}>Active</a></li>
+							<li><a href="#" onClick={this.props.switchType.bind(null,'completed')} className={selectedClass[2]}>Completed</a></li>
+						</ul>
+						<button className="clear-completed" onClick={this.props.clear}>Clear completed</button>
+					</div>
+		}
+	});
+
+	ReactDOM.render(
+		<APP/>,
+		document.getElementById("AppRoot")
+	);
+
+
+
+	
+</script>
+    
+</html>
