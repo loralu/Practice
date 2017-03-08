@@ -59,6 +59,7 @@
 				});
 				that.setState(todolist)	
 			}
+			console.log(1)
 				
 		},
 
@@ -67,19 +68,17 @@
 	 	*/
 		delTaskHandel: function(i){
 			return function(){
-				this.setState(function(){
-					var todolist=this.state.todolist;
-					todolist.todos.splice(i,1);
-					return todolist;
-				})
+				var todolist=this.state.todolist;
+				todolist.todos.splice(i,1);
+				this.setState(todolist);
             }.bind(this);        
 		},
 	
 		/** 
 	 	* 更改显示
 	 	*/
-		switchTypeHandel: function(){
-			return function(value){
+		switchTypeHandel: function(value){
+			return function(){
 				var type='';
 				switch(value){
 					case 'all':
@@ -114,16 +113,13 @@
 		/** 
 	 	* 清除已完成的任务
 	 	*/
-		clrCompHandel: function(){
-			return function(){
-					var todolist=this.state.todolist;
-					console.log(todolist)
-		           	var todos=todolist.todos.filter(function(todo,i){
-							return !todo.completed;
-		           	});     		       		
-		         	todolist.todos=todos;		             
-		            this.setState(todolist);
-				}.bind(this);           
+		clrCompHandel: function(){			
+			var todolist=this.state.todolist;
+           	var todos=todolist.todos.filter(function(todo,i){
+					return !todo.completed;
+           	});     		       		
+         	todolist.todos=todos;		             
+            this.setState(todolist);				        
 		},
 
 		render: function(){
@@ -138,7 +134,7 @@
 									  type={this.state.type} 
 									  delTask={this.delTaskHandel} 
 									  switchTask={this.switchTaskHandel}/>
-							<Footer type={this.state.type} switchType={this.switchTypeHandel()} clear={this.clrCompHandel()}/>
+							<Footer type={this.state.type} switchType={this.switchTypeHandel} clear={this.clrCompHandel}/>
 						</div>						
 					</div>
 		}
@@ -246,9 +242,9 @@
 			return  <div className="footer">
 						<span className="todo-count">{lefted} items left</span>
 						<ul className="filters">
-							<li><a href="#" onClick={this.props.switchType.bind(null,'all')} className={selectedClass[0]}>All</a></li>
-							<li><a href="#" onClick={this.props.switchType.bind(null,'active')} className={selectedClass[1]}>Active</a></li>
-							<li><a href="#" onClick={this.props.switchType.bind(null,'completed')} className={selectedClass[2]}>Completed</a></li>
+							<li><a href="#" onClick={this.props.switchType('all')} className={selectedClass[0]}>All</a></li>
+							<li><a href="#" onClick={this.props.switchType('active')} className={selectedClass[1]}>Active</a></li>
+							<li><a href="#" onClick={this.props.switchType('completed')} className={selectedClass[2]}>Completed</a></li>
 						</ul>
 						<button className="clear-completed" onClick={this.props.clear}>Clear completed</button>
 					</div>
